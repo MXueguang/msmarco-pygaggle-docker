@@ -5,15 +5,13 @@ RUN mkdir -p /usr/share/man/man1 && \
     apt install -y bash \
                    build-essential \
 		   git \
-		   wget \
-                   tar \
                    curl \
                    ca-certificates \
 	           openjdk-11-jdk-headless && \
     rm -rf /var/lib/apt/lists
 
 WORKDIR /home
-COPY requirements.txt getIndex.sh /home/
+COPY requirements.txt /home/
 
 RUN git clone https://github.com/castorini/pygaggle.git
 RUN pip install --upgrade pip && \
