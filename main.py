@@ -15,6 +15,7 @@ app = FastAPI()
 
 class Passage(BaseModel):
     docid: str
+    score: float
     text: str
 
 
@@ -32,4 +33,3 @@ def rerank(rerank_request: RerankRequest):
     reranked.sort(key=lambda x: x.score, reverse=True)
     results = [{'docid': t.metadata["docid"], 'score': t.score} for t in reranked]
     return {'results': results}
-
