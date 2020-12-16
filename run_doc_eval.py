@@ -9,6 +9,8 @@ corpus_file = 'msmarco-corpus.tsv'
 parser = argparse.ArgumentParser(description='Generates a run.')
 parser.add_argument('--output', required=True, type=str, help='Output run file.')
 parser.add_argument('--k', required=True, type=int, help='Number of hits.')
+parser.add_argument('--l1_url', type=str, default="http://127.0.0.1:8000/search/", help='url of L1')
+parser.add_argument('--l2_url', type=str, default="http://127.0.0.1:9000/rerank/", help='url of L2')
 
 args = parser.parse_args()
 
@@ -29,13 +31,13 @@ with open(args.output, 'w') as out:
         qid = entry[0]
         query = entry[1]
         #print(f'{qid}----{query}')
-        L1_response = requests.get('http://127.0.0.1:8000/search/', params={'q': query, 'k': args.k})
+        L1_response = requests.get(args.l1_url, params={'q': query, 'k': args.k})
         L1_response = L1_response.json()
         L2_request = {"query": query,
                       "passages": [{"docid": h["docid"],
                                     "score": h["score"],
                                     "text": corpus[h["docid"]]} for h in L1_response]}
-        L2_response = requests.post('http://127.0.0.1:8000/rerank/', json=L2_request)
+        L2_response = requests.post(args.l2_url, json=L2_request)
         rank = 1
         for h in L2_response['results']:
             out.write(f'{qid} Q0 {h["docid"]} {rank} {h["score"]:.6f} monoBERT\n')
