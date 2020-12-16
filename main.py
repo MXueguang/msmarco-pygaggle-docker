@@ -1,6 +1,6 @@
 import sys
 
-sys.path.insert(0, '../pygaggle/')
+sys.path.insert(0, 'pygaggle/')
 
 from fastapi import FastAPI
 from pygaggle.rerank.base import Query, Text
@@ -26,7 +26,7 @@ class RerankRequest(BaseModel):
 
 @app.post("/rerank/")
 def rerank(rerank_request: RerankRequest):
-    query = rerank_request.query
+    query = Query(rerank_request.query)
     passages = rerank_request.passages
     texts = [Text(p.text, "", {'docid': p.docid}, 0) for p in passages]
     reranked = reranker.rerank(query, texts)
