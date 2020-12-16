@@ -3,30 +3,27 @@ import requests
 
 from tqdm import tqdm
 
-query_file = 'msmarco-docdev-queries.tsv'
-corpus_file = 'msmarco-docs.tsv'
 
 parser = argparse.ArgumentParser(description='Generates a run.')
+parser.add_argument('--query_file', type=str, default='queries.dev.small.tsv', help='query file, the first column is the query id and the second column is the query text')
+parser.add_argument('--corpus_file', type=str, default='collection.tsv', help='corpus tsv file, first column is the passage id and the second column is the passage text')
 parser.add_argument('--output', required=True, type=str, help='Output run file.')
 parser.add_argument('--k', required=True, type=int, help='Number of hits.')
 parser.add_argument('--l1_url', type=str, default="http://127.0.0.1:8000/search/", help='url of L1')
 parser.add_argument('--l2_url', type=str, default="http://127.0.0.1:9000/rerank/", help='url of L2')
-
 args = parser.parse_args()
 
 queries = []
-with open(query_file, 'r') as f:
+with open(args.query_file, 'r') as f:
     for line in f:
         qid, query = line.rstrip().split('\t')
         queries.append([qid, query])
 
 corpus = {}
-with open(corpus_file, 'r') as f:
+with open(args.corpus_file, 'r') as f:
     for line in tqdm(f):
-        info = line.rstrip().split("\t")
-        if len(info)==4:
-            doc_id, _, _, doc = info
-            corpus[doc_id] = doc
+        doc_id, doc = line.rstrip().split('\t')
+        corpus[doc_id] = doc
 
 with open(args.output, 'w') as out:
     for entry in tqdm(queries):
