@@ -4,7 +4,7 @@ import requests
 from tqdm import tqdm
 
 query_file = 'msmarco-docdev-queries.tsv'
-corpus_file = 'msmarco-corpus.tsv'
+corpus_file = 'msmarco-docs.tsv'
 
 parser = argparse.ArgumentParser(description='Generates a run.')
 parser.add_argument('--output', required=True, type=str, help='Output run file.')
@@ -23,8 +23,10 @@ with open(query_file, 'r') as f:
 corpus = {}
 with open(corpus_file, 'r') as f:
     for line in tqdm(f):
-        doc_id, doc = line.rstrip().split('\t')
-        corpus[doc_id] = doc
+        info = line.rstrip().split("\t")
+        if len(info)==4:
+            doc_id, _, _, doc = info
+            corpus[doc_id] = doc
 
 with open(args.output, 'w') as out:
     for entry in tqdm(queries):
@@ -36,9 +38,10 @@ with open(args.output, 'w') as out:
         L2_request = {"query": query,
                       "passages": [{"docid": h["docid"],
                                     "score": h["score"],
-                                    "text": corpus[h["docid"]]} for h in L1_response]}
-        L2_response = requests.post(args.l2_url, json=L2_request)
+                                    "text": corpus[h["docid"]]} for h in L1_response["results"]]}
+        L2_response = requests.post(args.l2_url, json=L2_request).json()
         rank = 1
         for h in L2_response['results']:
             out.write(f'{qid} Q0 {h["docid"]} {rank} {h["score"]:.6f} monoBERT\n')
             rank = rank + 1
+
